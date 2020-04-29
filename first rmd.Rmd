@@ -1,0 +1,69 @@
+---
+title: "first"
+author: "Ali Guner"
+date: "4/30/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(utils)
+library(dplyr)
+library(tidyverse)
+library(lubridate)
+```
+
+
+```{r}
+#read the Dataset sheet into “R”. The dataset will be called "data".
+data <- read.csv("https://opendata.ecdc.europa.eu/covid19/casedistribution/csv", na.strings = "", fileEncoding = "UTF-8-BOM") %>% 
+  as.tibble() %>% 
+  mutate(dateRep = dmy(dateRep))
+data %>% 
+  filter (countriesAndTerritories == "Turkey") %>% 
+  ggplot(aes(dateRep, deaths, group=1))+
+  geom_line()
+```
+
+
+```{r}
+data %>% 
+  mutate(countriesAndTerritories = fct_recode(countriesAndTerritories, "US" = "United_States_of_America"),
+         countriesAndTerritories = fct_recode(countriesAndTerritories, "UK" = "United_Kingdom")) %>% 
+  filter (dateRep > "2020-03-01") %>% 
+  filter(cases >= 0) %>% 
+  pivot_longer(cols = c("cases", "deaths"), names_to = "what", values_to = "value") %>% 
+  filter (countriesAndTerritories %in% c("Turkey", "Italy", "Spain", "Germany", "US","UK")) %>% 
+  ggplot(aes(dateRep, value/popData2018*1000000, color=countriesAndTerritories))+
+  geom_line() +
+  facet_wrap(~ what, scales = "free") +
+  scale_y_continuous(labels = scales::number) +
+  labs( x= "",
+        y= "no / population (per 1.000.000)",
+        color = "Country") +
+  theme(axis.text.x = element_text(angle= 45,hjust=1))
+
+
+data %>% 
+  count (countriesAndTerritories) %>% View
+
+
+data %>% 
+  group_by(countriesAndTerritories) %>% 
+  summarise(n=n(),
+            sum_cases = sum(cases), 
+            sum_deaths = sum(deaths),
+            pop = sum(popData2018)/n,
+            cases = sum_cases/pop*100000,
+            deaths= sum_deaths/pop*100000) %>% 
+  filter (countriesAndTerritories %in% c("Turkey", "Italy", "Spain", "Germany", "United_States_of_America", "China")) %>% 
+  
+
+```
+
