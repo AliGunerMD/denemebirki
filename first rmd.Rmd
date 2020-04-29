@@ -48,12 +48,16 @@ data %>%
         y= "no / population (per 1.000.000)",
         color = "Country") +
   theme(axis.text.x = element_text(angle= 45,hjust=1))
+```
 
 
+```{r}
 data %>% 
   count (countriesAndTerritories) %>% View
+```
 
 
+```{r}
 data %>% 
   group_by(countriesAndTerritories) %>% 
   summarise(n=n(),
